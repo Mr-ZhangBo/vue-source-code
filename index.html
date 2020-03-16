@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue-scource-code</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 插值绑定 -->
+        <p>{{name}}</p>
+        <!-- 指令解析 -->
+        <p v-text="name"></p>
+        <p>{{age}}</p>
+        <!-- 双向数据绑定 -->
+        <input type="text" v-model="name">
+        <!-- 事件处理 -->
+        <button @click="changeName">呵呵</button>
+        <!-- html内容解析 -->
+        <div v-html="html"></div>
+    </div>
+    <script src="./vue.js"></script>
+    <script src="./compile.js"></script>
+    <script>
+        let app = new Vue({
+            el: "#app",
+            data: {
+                name: '测试',
+                age: 12,
+                html: '<button>这是一个按钮</button>',
+                items: {
+                    name: '张波'
+                }
+            },
+            created () {
+                console.log('created')
+                setTimeout(()=>{
+                    this.name = '我是测试'
+                },2000)
+            },
+            methods: {
+                changeName() {
+                    console.log('changeName')
+                    this.name = '我是测试changeName'
+                    this.age = 2
+                }
+            },
+        })
+        console.log(app)
+    </script>
+</body>
+</html>
