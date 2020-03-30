@@ -6,15 +6,19 @@
     <title>Vue源码</title>
 </head>
 <body>
+    <div id="app">
+        <p>{{counter}}</p>
+        <p>{{counter}}</p>
+        <p v-text="counter"></p>
+        <p v-html="desc"></p>
+    </div>
     <script src="./vue.js"></script>
     <script>
         const app = new Vue({
             el: '#app',
             data: {
-                user: {
-                    name: 'zhangbo'
-                },
-                text: '测试'
+                counter: 1,
+                desc: '<span style="color: red">你看我</span>'
             }
         })
 
@@ -24,9 +28,8 @@
         // }
 
         // setInterval(()=>{
-        //     // console.log(app.text)
-        //     console.log(app)
-        // },2000)
+        //     app.counter++
+        // },1000)
     </script>
 </body>
 </html>
