@@ -26,10 +26,33 @@ class Observe{
     }
 }
 
+// 数组响应式
+const originalProto = Array.prototype;
+// 备份一份
+const arrayProto = Object.create(originalProto)
+const arrayMethod = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse']
+arrayMethod.forEach(method => {
+    arrayProto[method] = function() {
+        // 原始操作
+        originalProto[method].apply(this, arguments)
+        // 覆盖操作：通知更新
+        // console.log('set' + key + ':' + newVal)
+        console.log('数组执行:' + method)
+    }
+})
+
 function observe(val) {
     if (typeof val !== 'object' || val === null) {
         return
     }
+    // if (Array.isArray(val)) {
+    //     // 覆盖原型
+    //     val.__proto__ = arrayProto
+    //     const keys = Object.keys(val)
+    //     for (let i = 0; i < val.length; i++) {
+    //         new Object(val[i])
+    //     }
+    // }
     new Observe(val)
 }
 
@@ -163,10 +186,23 @@ class Compile{
                 let dir = attrName.substring(2)
                 this[dir] && this[dir](node, exp)
             }
+            // 事件处理
+            if (this.isEvent(attrName)) {
+                let dir = attrName.substring(1)
+                // 事件监听
+                this.eventHandler(node, exp, dir)
+            }
         })
     }
     isDir(attr) {
         return attr.indexOf('v-') === 0
+    }
+    isEvent(dir) {
+        return dir.indexOf('@') === 0
+    }
+    eventHandler(node, exp, dir) {
+        const fn = this.$vm.$options.methods && this.$vm.$options.methods[exp]
+        node.addEventListener(dir, fn.bind(this.$vm))
     }
     // v-text
     text(node, exp) {
@@ -177,6 +213,18 @@ class Compile{
     html(node, exp) {
         // node.innerHTML = this.$vm[exp]
         this.update(node, exp, 'html')
+    }
+    // v-model
+    model(node, exp) {
+        // update方法只完成赋值和更新
+        this.update(node, exp, 'model')
+        // 事件监听
+        node.addEventListener('input', e => {
+            this.$vm[exp] = e.target.value
+        })
+    }
+    modelUpdater(node, val) {
+        node.value = val
     }
     htmlUpdater(node, val) {
         node.innerHTML = val
