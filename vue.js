@@ -170,12 +170,13 @@ class Compile{
     }
     // v-text
     text(node, exp) {
-        node.textContent = this.$vm[exp]
+        // node.textContent = this.$vm[exp]
+        this.update(node, exp, 'text')
     }
     // v-html
     html(node, exp) {
-        this.update(node, exp, 'html')
         // node.innerHTML = this.$vm[exp]
+        this.update(node, exp, 'html')
     }
     htmlUpdater(node, val) {
         node.innerHTML = val
