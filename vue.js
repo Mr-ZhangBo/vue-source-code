@@ -1,70 +1,59 @@
 class Vue{
     constructor(options) {
-        console.log('options', options)
         this.$options = options
         this.$data = options.data
-        this.observe(this.$data)
-        new Compile(options.el, this)
-        if (options.created) {
-            options.created.call(this)
-        }
+
+        // 响应式
+        observe(this.$data)
+
+        // 代理
+        proxy(this, '$data')
     }
-    observe(value) {
-        if (!value || typeof value !== 'object') {
-            return
-        }
-        Object.keys(value).forEach(key=>{
-            this.defineReactive(value, key, value[key])
+}
+
+class Observe{
+    constructor(value) {
+        this.value = value
+        this.walk(value)
+    }
+    walk(obj) {
+        Object.keys(obj).forEach(key => {
+            defineReactive(obj, key, obj[key])
         })
     }
-    defineReactive(obj, key, val) {
-        this.observe(val)
+}
 
-        const dep = new Dep()
-        Object.defineProperty(obj, key, {
+function observe(val) {
+    if (typeof val !== 'object' || val === null) {
+        return
+    }
+    new Observe(val)
+}
+
+function defineReactive(obj, key, val) {
+    Object.defineProperty(obj, key, {
+        get() {
+            return val
+        },
+        set(newVal) {
+            if (newVal === val) {
+                return
+            }
+            observe(newVal)
+            val = newVal
+        }
+    })
+}
+
+function proxy(vm, prop) {
+    Object.keys(vm[prop]).forEach(key => {
+        Object.defineProperty(vm, key, {
             get() {
-                Dep.target && dep.addDep(Dep.target)
-                return val;
+                return vm[prop][key]
             },
-            set(nVal, oVal) {
-                console.log(` 属性发生变化了新值是 ${nVal} 老值是 ${oVal} `)
-                if (nVal == oVal) {
-                    return
-                }
-                val = nVal
-                dep.notify()
+            set(newVal) {
+                vm[prop][key] = newVal
             }
         })
-    }
-}
-
-// 订阅者
-class Dep{
-    constructor() {
-        // 存储所有依赖
-        this.deps = []
-    }
-    // 依赖收集
-    addDep(dep) {
-        this.deps.push(dep)
-    }
-    // 依赖通知
-    notify() {
-        console.log('this.deps', this.deps)
-        this.deps.forEach(key=>{
-            dep.update();
-        })
-    }
-}
-
-// 发布者
-class Watcher{
-    constructor() {
-        // 将当前watcher实例指定到Dep静态属性target
-        Dep.target = this
-    }
-    // 更新视图的方法
-    update() {
-        console.log('属性更新了');
-    }
+    })
 }
